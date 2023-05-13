@@ -15,6 +15,52 @@ typedef struct graph {
 }Graph;
 
 
+void makeAdjacencyMatrix(int ***, int );
+void addEdge(Graph* graph, int , int );
+void adjMatrixToAdjList(int **, Graph* , int );
+void printGraph(Graph* );
+void printMatrix(int **, int );
+void numberOfPrerequisites(Graph* , int , int *);
+void printPrerequisites(int *, int );
+void semesterCount(Graph *, int , int *, int *);
+
+
+int main(){
+	
+	int n, semester = 0;
+	int **adjacencyMatrix;
+
+	int *arr;
+	Graph* graph = (Graph*) malloc(sizeof(Graph));
+	
+	
+	printf("How many course will be taken?");
+	scanf("%d", &n);
+	
+	makeAdjacencyMatrix(&adjacencyMatrix, n);
+	printMatrix(adjacencyMatrix, n);
+	
+	printf("\n");
+    adjMatrixToAdjList(adjacencyMatrix, graph, n);
+    printGraph(graph);
+    printf("\n");
+    
+	arr = (int*)calloc(n,sizeof(int));
+	
+	numberOfPrerequisites(graph, n, arr);
+	printPrerequisites(arr, n);
+
+
+	semesterCount(graph, n, arr, &semester);
+	printf("The student finishes school in %d semesters.", semester);
+
+	
+	return 0; 
+}
+
+
+
+
 void makeAdjacencyMatrix(int ***matrix, int n){
 	
 	int i,j;
@@ -29,10 +75,14 @@ void makeAdjacencyMatrix(int ***matrix, int n){
 	
 	for(i=0; i<n; i++){
 		for(j=0; j<n; j++){
-			printf("If the %d. course is the prerequisite for the %d. course, enter 1. Enter:", j+1, i+1);
-			scanf("%d", &(*matrix)[i][j]);
+			
+			if(i!=j && (*matrix)[j][i] == 0 ){
+				printf("[%d] ---> [%d]\n", i+1, j+1);
+				printf("If the %d. course is the prerequisite for the %d. course, enter 1. Enter:", j+1, i+1);
+				scanf("%d", &(*matrix)[i][j]);
+			}
+				
 		}
-	
 	}
 
 }
@@ -46,9 +96,7 @@ void addEdge(Graph* graph, int source, int destination) {
     
     graph->adjacencyLists[source] = newNode;
     
-    
 }
-
 
 void adjMatrixToAdjList(int **matrix, Graph* graph, int n) {
 	
@@ -73,11 +121,11 @@ void printGraph(Graph* graph) {
 	
     int i;
     Node* tmp;
+    printf("\nADJACENCY LIST:\n");
     for (i=0; i<graph->V; i++) {
     	
         tmp = graph->adjacencyLists[i];
         
-
         printf("Course [%d] ->> " , i+1);
         while (tmp != NULL) {
             printf("Course [%d] ->> ", tmp->dest +1 );
@@ -89,7 +137,7 @@ void printGraph(Graph* graph) {
 
 void printMatrix(int **matrix, int n){
 	int i, j;
-	
+	printf("\nADJACENCY MATRIX:\n");
 	for(i=0; i<n; i++){
 		for(j=0; j<n; j++){
 			printf("%d\t", matrix[i][j]);
@@ -106,9 +154,8 @@ void numberOfPrerequisites(Graph* graph, int n, int *arr){
 	Node *tmp;
 	
 	for(i=0; i<n; i++){
-		
+	
 		tmp = graph->adjacencyLists[i];
-		
 		while(tmp){
 			
 			arr[tmp->dest] ++;
@@ -131,31 +178,27 @@ void printPrerequisites(int *arr, int n){
 }
 
 
-
 void semesterCount(Graph *graph, int n, int *arr, int *semester){
 	
-	int i;
+	int i,j=0, count;
 	Node *tmp;
+	
 	int *indegree = (int*)malloc(n*sizeof(int));
 	
 	for(i=0; i<n; i++){
 		indegree[i] = arr[i];
 	}
 	
-	int j =0;
-	
-	int count;
-	
 	do{
-		
 		count = 0;	
 		j++;
+		
 		for(i=0; i<n; i++){
 			
 			if(arr[i] == 0){
 			
 				indegree[i]= -1;
-				printf("\nSemester %d -> Course-%d is taken.\n", j, i+1);
+				printf("\nSemester %d -- Course-%d can be taken.\n", j, i+1);
 				tmp = graph->adjacencyLists[i];
 
 				while(tmp != NULL){
@@ -163,58 +206,21 @@ void semesterCount(Graph *graph, int n, int *arr, int *semester){
 					indegree[tmp->dest]--;
 					tmp = tmp->next;
 				}
-				
-			}
-			
+			}	
 		}
 		
 		for(i=0; i<n; i++){
 			arr[i]  = indegree[i];
-		}
-		
-	
-		for(i=0; i<n; i++){
 			if(indegree[i] == -1){
 				count++;
 			}
 		}
+		
 		printf("\n");
 		printPrerequisites(arr, n);
 		
-	}while(count !=n );
+	}while(count!=n);
 	
 	*semester = j;
 }
 
-
-
-int main(){
-	
-	int n;
-	int **adjacencyMatrix;
-	int semester=0;
-	Graph* graph = (Graph*) malloc(sizeof(Graph));
-	
-	
-	printf("How many course will be taken?");
-	scanf("%d", &n);
-	
-
-	makeAdjacencyMatrix(&adjacencyMatrix, n);
-	printMatrix(adjacencyMatrix, n);
-	
-    adjMatrixToAdjList(adjacencyMatrix, graph, n);
-    printGraph(graph);
-    
-	int *arr = (int*)calloc(n,sizeof(int));
-	
-	numberOfPrerequisites(graph, n, arr);
-	printPrerequisites(arr, n);
-
-
-	semesterCount(graph, n, arr, &semester);
-	printf("The student finishes school in %d semesters.", semester);
-
-	
-	return 0; 
-}
